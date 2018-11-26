@@ -1,7 +1,30 @@
-# Distributed-Systems-Project
+Distributed-Systems-Project
+=======
 
-resources:
+## Resources:
 
 https://www.javaworld.com/article/2075440/core-java/develop-a-generic-caching-service-to-improve-performance.html
 
 http://www.java2s.com/Code/Java/Network-Protocol/Asimpleproxyserver.htm
+
+
+## Current Status
+
+* ExternalServer sends memes.docx to whatever client connects to it
+* Client currently only reads a file directly from ExternalServer
+* Server currently acts as a proxy only for a specific host:port
+* Server currently intercepts requests from client, checks cache, if not in cache, forward to server, else reply to client with "local available"
+
+
+## TODO:
+
+* ExternalServer:
+    * Receive input from client for the filename
+* Client:
+    * Once file is downloaded, start a thread running code similar to that of ExternalServer
+    * rewrite to send a string request and expect a string reply
+        * depending on reply, either expect a file download from server or a host:port to download from
+* Server: 
+    * add functionality to read file from ExternalServer and forward to client
+    * only read reply from server when cache reply is null
+

@@ -14,9 +14,9 @@ public class Server{
 
         try{
             cache = new CacheManager();
-            String host = "P2Proxy";
-            int remotePort = 100;
-            int localPort = 111;
+            String host = "localhost";
+            int remotePort = 6969;
+            int localPort = 6968;
 
             System.out.println("Starting proxy for " + host + ":" + remotePort + " on port " + localPort);
             runServer(host, remotePort, localPort);
@@ -57,20 +57,20 @@ public class Server{
                 Thread t = new Thread(){
                     public void run(){
                         int bytesRead;
-                        CacheableObject torrent;
+                        CacheableObject cached;
                         try{
                             while((bytesRead = streamFromClient.read(request)) != -1){
                                
                                 //if request is not cached, cache it and forward request to server
                                 if(cache.getFromCache(request) == null){
-                                    torrent = new CacheableObject(client.getRemoteSocketAddress().toString(), request, 0 );
-                                    cache.addToCache(torrent);
+                                    cached = new CacheableObject(client.getRemoteSocketAddress().toString(), request, 0 );
+                                    cache.addToCache(cached);
                                     streamToServer.write(request, 0, bytesRead);
                                     streamToServer.flush();
 
                                 }else{
-                                    //TODO: if request IS cached, send torrent to client
-                                    byte[] message = "torrent available".getBytes();
+                                    //TODO: if request IS cached, send cached to client
+                                    byte[] message = "local available".getBytes();
                                     streamToClient.write(message, 0, message.length );
                                     streamToClient.flush();
                                     streamFromClient.read();
