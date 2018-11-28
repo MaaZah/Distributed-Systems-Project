@@ -7,6 +7,7 @@ public class ExternalServer {
  
         int bytesRead;
         int current = 0;
+        byte[] request = new byte[1024];
      
         ServerSocket serverSocket = null;
         serverSocket = new ServerSocket(6969);
@@ -16,6 +17,7 @@ public class ExternalServer {
             clientSocket = serverSocket.accept();
              
             InputStream in = clientSocket.getInputStream();
+            bytesRead = in.read(request);
              
             // Writing the file to disk
             // Instantiating a new output stream object
