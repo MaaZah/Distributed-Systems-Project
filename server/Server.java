@@ -10,6 +10,10 @@ import java.net.Socket;
 public class Server{
 
     private static CacheManager cache;
+    public static InputStream streamFromServer;
+    public static boolean flag = false;
+                
+    public static OutputStream streamToServer;
     public static void main(String[] args) throws IOException{
 
         try{
@@ -54,9 +58,9 @@ public class Server{
                     continue;
                 }
 
-                final InputStream streamFromServer = server.getInputStream();
+                streamFromServer = server.getInputStream();
                 
-                final OutputStream streamToServer = server.getOutputStream();
+                streamToServer = server.getOutputStream();
 
                 Thread t = new Thread(){
                     public void run(){
@@ -66,11 +70,19 @@ public class Server{
                             while((bytesRead = streamFromClient.read(request)) != -1){
                                
                                 //if request is not cached, cache it and forward request to server
-                                //if(cache.getFromCache(request) == null){
+                                if(cache.getFromCache(request) == null){
+                                    
+                                    flag = false;
+                                }else{
+                                    flag = true;
+                                }
+                                if(!flag){
                                     cached = new CacheableObject(address, request, 0 );
                                     cache.addToCache(cached);
                                     streamToServer.write(request, 0, bytesRead);
                                     streamToServer.flush();
+                                }
+                                  
 
                                 // }else{
                                 //     //TODO: if request IS cached, send cached to client
@@ -83,40 +95,41 @@ public class Server{
                                 // }
                                 
                             }
+                            
                         }catch(IOException e){
 
                         }
-                        try{
-                            streamToServer.close();
-                        }catch(IOException e){
-
-                        }
+                       
                     }
                 };
 
                 t.start();
 
                 int bytesRead;
-                try{
-                    DataInputStream dsfs = new DataInputStream(streamFromServer);
-                    DataOutputStream dstc = new DataOutputStream(streamToClient);
-                    String fileName = dsfs.readUTF();
-                    long size = dsfs.readLong();
+                if(!flag){
+                    try{
+                        DataInputStream dsfs = new DataInputStream(streamFromServer);
+                        DataOutputStream dstc = new DataOutputStream(streamToClient);
+                        String fileName = dsfs.readUTF();
+                        long size = dsfs.readLong();
 
-                    dstc.writeUTF(fileName);
-                    dstc.writeLong(size);
-                    byte[] buffer = new byte[1024];
-                    while (size > 0 && (bytesRead = dsfs.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1)
-                    {
-                        dstc.write(buffer, 0, bytesRead);
-                        size -= bytesRead;
+                        dstc.writeUTF(fileName);
+                        dstc.writeLong(size);
+                        byte[] buffer = new byte[1024];
+                        while (size > 0 && (bytesRead = dsfs.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1)
+                        {
+                            dstc.write(buffer, 0, bytesRead);
+                            size -= bytesRead;
+                        }
+                        dsfs.close();
+                        dstc.close();
+                    }catch(IOException e){
+
                     }
-                    dsfs.close();
-                    dstc.close();
-                }catch(IOException e){
-
+                    streamToClient.close();
+                    streamToServer.close();
                 }
-                streamToClient.close();
+                
 
             }catch(IOException e){
                 System.err.println(e);

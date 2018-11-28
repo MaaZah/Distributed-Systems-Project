@@ -11,10 +11,12 @@ public class ExternalServer {
      
         ServerSocket serverSocket = null;
         serverSocket = new ServerSocket(6969);
+        
            
         while(true) {
             Socket clientSocket = null;
             clientSocket = serverSocket.accept();
+            System.out.println("client accepted");
              
             InputStream in = clientSocket.getInputStream();
             bytesRead = in.read(request);
