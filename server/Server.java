@@ -12,6 +12,10 @@ public class Server{
     private static CacheManager cache;
     public static InputStream streamFromServer;
     public static boolean flag = false;
+    public static String peerAddress;
+    public static int peerPort;
+    public static String address;
+
                 
     public static OutputStream streamToServer;
     public static void main(String[] args) throws IOException{
@@ -40,10 +44,13 @@ public class Server{
         while(true){
             Socket client = null;
             Socket server = null;
-            String address;
+            
             try{
                 client = ss.accept();
                 address = client.getRemoteSocketAddress().toString();
+                address = address.substring(0, address.indexOf(":"));
+                address = address.replaceAll("^/+", "");
+                System.out.println(address);
                 final InputStream streamFromClient = client.getInputStream();
                 final OutputStream streamToClient = client.getOutputStream();
 
@@ -62,52 +69,46 @@ public class Server{
                 
                 streamToServer = server.getOutputStream();
 
-                Thread t = new Thread(){
-                    public void run(){
-                        int bytesRead;
-                        CacheableObject cached;
-                        try{
-                            while((bytesRead = streamFromClient.read(request)) != -1){
-                               
-                                //if request is not cached, cache it and forward request to server
-                                if(cache.getFromCache(request) == null){
-                                    
-                                    flag = false;
-                                }else{
-                                    flag = true;
-                                }
-                                if(!flag){
-                                    cached = new CacheableObject(address, request, 0 );
-                                    cache.addToCache(cached);
-                                    streamToServer.write(request, 0, bytesRead);
-                                    streamToServer.flush();
-                                }
-                                  
-
-                                // }else{
-                                //     //TODO: if request IS cached, send cached to client
-                                //     byte[] message = "local available".getBytes();
-                                //     streamToClient.write(message, 0, message.length );
-                                //     streamToClient.flush();
-                                //     streamFromClient.read();
-
-
-                                // }
-                                
-                            }
-                            
-                        }catch(IOException e){
-
-                        }
+                // Thread t = new Thread(){
+                //     public void run(){
+                        
                        
-                    }
-                };
+                //     }
+                // };
 
-                t.start();
-
+                // t.start();
                 int bytesRead;
+                CacheableObject cached;
+                try{
+                    bytesRead = streamFromClient.read(request);
+                    //if request is not cached, cache it and forward request to server
+                    if(cache.getFromCache(request) == null){
+                        
+                        flag = false;
+                    }else{
+                        flag = true;
+                    }
+                    if(!flag){
+                        cached = new CacheableObject(address, request, 0 );
+                        cache.addToCache(cached);
+                        streamToServer.write(request, 0, bytesRead);
+                        streamToServer.flush();
+                    }else{
+                        System.out.println("else");
+                        cached = (CacheableObject)cache.getFromCache(request);
+                        peerAddress = (String)cached.object;
+                        System.out.println(peerAddress);
+                        peerPort = 6967;
+                        
+                    }
+                    
+                }catch(IOException e){
+
+                }
+                
                 if(!flag){
                     try{
+                        System.out.println("IN IF");
                         DataInputStream dsfs = new DataInputStream(streamFromServer);
                         DataOutputStream dstc = new DataOutputStream(streamToClient);
                         String fileName = dsfs.readUTF();
@@ -128,8 +129,18 @@ public class Server{
                     }
                     streamToClient.close();
                     streamToServer.close();
+                }else if(flag){
+                    System.out.println("IN ELSE");
+                    streamToServer.close();
+                    DataOutputStream dstc = new DataOutputStream(streamToClient);
+                    dstc.writeUTF("e35b4c8d-5cfd-4703-b733-554134897799");
+                    dstc.writeUTF(peerAddress);
+                    dstc.writeInt(peerPort);
+                    dstc.close();
+                    streamToClient.close();
+
                 }
-                
+                System.out.println("AFTER ELSE");
 
             }catch(IOException e){
                 System.err.println(e);
