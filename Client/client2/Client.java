@@ -64,6 +64,9 @@ public class Client {
                             System.out.println("client accepted");
                             InputStream in = clientSocket.getInputStream();
                             bytesRead = in.read(request);
+                            String requestString = new String(request);
+                            requestString = requestString.trim();
+                            System.out.println(requestString);
                             
                             // Writing the file to disk
                             // Instantiating a new output stream object
@@ -71,7 +74,7 @@ public class Client {
                 
                             //TODO: read input from client, and use that for filename.
                 
-                            File myFile = new File("memes.docx");
+                            File myFile = new File(requestString);
                             byte[] mybytearray = new byte[(int) myFile.length()];
                             
                             FileInputStream fis = new FileInputStream(myFile);

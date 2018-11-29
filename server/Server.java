@@ -54,21 +54,7 @@ public class Server{
                 final InputStream streamFromClient = client.getInputStream();
                 final OutputStream streamToClient = client.getOutputStream();
 
-                try{
-                    server = new Socket(host, remotePort);
-
-                }catch(IOException e){
-                    PrintWriter out = new PrintWriter(streamToClient);
-                    out.print("Proxy server cannot connect to " + host + ":" + remotePort + "\n" + e);
-                    out.flush();
-                    client.close();
-                    continue;
-                }
-
-                streamFromServer = server.getInputStream();
                 
-                streamToServer = server.getOutputStream();
-
                 // Thread t = new Thread(){
                 //     public void run(){
                         
@@ -89,6 +75,20 @@ public class Server{
                         flag = true;
                     }
                     if(!flag){
+                        try{
+                            server = new Socket(host, remotePort);
+        
+                        }catch(IOException e){
+                            PrintWriter out = new PrintWriter(streamToClient);
+                            out.print("Proxy server cannot connect to " + host + ":" + remotePort + "\n" + e);
+                            out.flush();
+                            client.close();
+                            continue;
+                        }
+        
+                        streamFromServer = server.getInputStream();
+                        
+                        streamToServer = server.getOutputStream();
                         cached = new CacheableObject(address, request, 0 );
                         cache.addToCache(cached);
                         streamToServer.write(request, 0, bytesRead);
