@@ -17,14 +17,17 @@ http://www.java2s.com/Code/Java/Network-Protocol/Asimpleproxyserver.htm
 
 
 ## TODO:
-
+* MAKE SURE IT WILL WORK ACROSS DIFFERENT MACHINES
 * ExternalServer:
-    * Receive input from client for the filename
+    * Look into using HTTP server
+    * Find solution for sending large files (java.lang.OutOfMemoryError: Java heap space)
+    * DONE >>> Receive input from client for the filename
 * Client:
-    * Once file is downloaded, start a thread running code similar to that of ExternalServer
-    * rewrite to send a string request and expect a string reply
-        * depending on reply, either expect a file download from server or a host:port to download from
+    * Add simple UI to select from list of file names
+    * DONE >>> Once file is downloaded, start a thread running code similar to that of ExternalServer
+    * DONE >>> rewrite to send a string request and expect a string reply
+        * DONE >>> depending on reply, either expect a file download from server or a host:port to download from
 * Server: 
-    * add functionality to read file from ExternalServer and forward to client
-    * only read reply from server when cache reply is null
+    * DONE >>> add functionality to read file from ExternalServer and forward to client
+    * DONE >>> only read reply from server when cache reply is null
 
