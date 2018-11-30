@@ -10,14 +10,14 @@ import java.net.Socket;
 public class Server{
 
     private static CacheManager cache;
-    public static InputStream streamFromServer;
+    public static DataInputStream streamFromServer;
     public static boolean flag = false;
     public static String peerAddress;
     public static int peerPort;
     public static String address;
 
                 
-    public static OutputStream streamToServer;
+    public static DataOutputStream streamToServer;
     public static void main(String[] args) throws IOException{
 
         try{
@@ -51,7 +51,7 @@ public class Server{
                 address = address.substring(0, address.indexOf(":"));
                 address = address.replaceAll("^/+", "");
                 System.out.println(address);
-                final InputStream streamFromClient = client.getInputStream();
+                final DataInputStream streamFromClient = new DataInputStream(client.getInputStream());
                 final OutputStream streamToClient = client.getOutputStream();
 
                 
@@ -66,9 +66,17 @@ public class Server{
                 int bytesRead;
                 CacheableObject cached;
                 try{
-                    bytesRead = streamFromClient.read(request);
+                    String req = streamFromClient.readUTF();
+                    //bytesRead = streamFromClient.read(request);
+                    if(req.equals("shutdown")){
+                        System.out.println("shutting down client");
+                        String sdreq = streamFromClient.readUTF();
+                        cache.removeFromCache(new CacheableObject(address, sdreq, 0));
+                        streamFromClient.close();
+                        continue;
+                    }
                     //if request is not cached, cache it and forward request to server
-                    if(cache.getFromCache(request) == null){
+                    if(cache.getFromCache(req) == null){
                         
                         flag = false;
                     }else{
@@ -86,16 +94,16 @@ public class Server{
                             continue;
                         }
         
-                        streamFromServer = server.getInputStream();
+                        streamFromServer = new DataInputStream(server.getInputStream());
                         
-                        streamToServer = server.getOutputStream();
-                        cached = new CacheableObject(address, request, 0 );
+                        streamToServer = new DataOutputStream(server.getOutputStream());
+                        cached = new CacheableObject(address, req, 0 );
                         cache.addToCache(cached);
-                        streamToServer.write(request, 0, bytesRead);
+                        streamToServer.writeUTF(req);
                         streamToServer.flush();
                     }else{
                         System.out.println("else");
-                        cached = (CacheableObject)cache.getFromCache(request);
+                        cached = (CacheableObject)cache.getFromCache(req);
                         peerAddress = (String)cached.object;
                         System.out.println(peerAddress);
                         peerPort = 6967;
@@ -109,8 +117,10 @@ public class Server{
                 if(!flag){
                     try{
                         System.out.println("IN IF");
-                        DataInputStream dsfs = new DataInputStream(streamFromServer);
-                        DataOutputStream dstc = new DataOutputStream(streamToClient);
+                        // DataInputStream dsfs = new DataInputStream(streamFromServer);
+                         DataOutputStream dstc = new DataOutputStream(streamToClient);
+                         DataInputStream dsfs = streamFromServer;
+                        
                         String fileName = dsfs.readUTF();
                         long size = dsfs.readLong();
 
@@ -125,19 +135,23 @@ public class Server{
                         dsfs.close();
                         dstc.close();
                     }catch(IOException e){
-
+                        System.out.println("failed");
                     }
                     streamToClient.close();
                     streamToServer.close();
                 }else if(flag){
                     System.out.println("IN ELSE");
                     streamToServer.close();
-                    DataOutputStream dstc = new DataOutputStream(streamToClient);
-                    dstc.writeUTF("e35b4c8d-5cfd-4703-b733-554134897799");
-                    dstc.writeUTF(peerAddress);
-                    dstc.writeInt(peerPort);
-                    dstc.close();
-                    streamToClient.close();
+                    try{
+                        DataOutputStream dstc = new DataOutputStream(streamToClient);
+                        dstc.writeUTF("e35b4c8d-5cfd-4703-b733-554134897799");
+                        dstc.writeUTF(peerAddress);
+                        dstc.writeInt(peerPort);
+                        dstc.close();
+                        streamToClient.close();
+                    }catch(Exception e){
+                        cache.removeFromCache( new CacheableObject(address, request, 0 ));
+                    }
 
                 }
                 System.out.println("AFTER ELSE");

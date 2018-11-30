@@ -4,33 +4,41 @@ import java.io.*;
 public class Client {
      
     private static boolean flag = false;
+    private static String address;
+    private static int port;
     public static void main(String[] args) throws IOException {
  
-        Socket sock = new Socket("localhost", 6968);
+        address = "localhost";
+        port = 6968;
+        Socket sock = new Socket(address, port);
  
         int bytesRead;
         int current = 0;
          
         InputStream in = sock.getInputStream();
-        OutputStream out = sock.getOutputStream();
+        DataOutputStream out = new DataOutputStream(sock.getOutputStream());
         String request = "memes.docx";
-        out.write(request.getBytes());
+        out.writeUTF(request);
+
         DataInputStream din = new DataInputStream(in);
         String fileName = din.readUTF();
         System.out.println(fileName);
+        System.out.println("***********");
         if(fileName.equals("e35b4c8d-5cfd-4703-b733-554134897799")){
             flag = true;
             String newHost = din.readUTF();
             int newPort = din.readInt();
+            System.out.println(newHost);
+            System.out.println(newPort);
             in.close();
             out.close();
             din.close();
             sock.close();
             sock = new Socket(newHost, newPort);
             in = sock.getInputStream();
-            out = sock.getOutputStream();
+            out = new DataOutputStream(sock.getOutputStream());
             din = new DataInputStream(in);
-            out.write(request.getBytes());
+            out.writeUTF(request);
             fileName = din.readUTF();
 
         }
@@ -48,6 +56,26 @@ public class Client {
         if(!flag){
             Thread t = new Thread(){
                 public void run(){
+
+                    Runtime.getRuntime().addShutdownHook(new Thread() {
+                        public void run() {
+                            System.out.println("shutting down");
+                            try{
+                                Socket shutdownSocket = new Socket(address, port);
+                                InputStream sdin = shutdownSocket.getInputStream();
+                                DataOutputStream sdout = new DataOutputStream(shutdownSocket.getOutputStream());
+                                sdout.writeUTF("shutdown");
+                                sdout.flush();
+                                sdout.writeUTF("memes.docx");
+                                sdout.flush();
+                                sdout.close();
+                                shutdownSocket.close();  
+                            }catch(Exception e){
+                                System.out.println("shutdown failed");
+                            } 
+
+                        }       
+                    });
                     int bytesRead;
                     int current = 0;
                     byte[] request = new byte[1024];
@@ -59,12 +87,13 @@ public class Client {
                         while(true) {
                             Socket clientSocket = null;
                             clientSocket = serverSocket.accept();
-                            System.out.println("Client accepted");
+                            System.out.println("client accepted");
                             InputStream in = clientSocket.getInputStream();
                             bytesRead = in.read(request);
                             String requestString = new String(request);
                             requestString = requestString.trim();
                             System.out.println(requestString);
+                            
                             // Writing the file to disk
                             // Instantiating a new output stream object
                             

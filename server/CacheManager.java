@@ -15,6 +15,10 @@ public class CacheManager{
 
     }
 
+    public static void removeFromCache(Object value){
+        hashMap.values().remove(value);
+    }
+
     public static Cacheable getFromCache(Object identifier){
 
         Cacheable object = (Cacheable)hashMap.get(identifier);

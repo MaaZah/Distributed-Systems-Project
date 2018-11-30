@@ -5,9 +5,9 @@ public class ExternalServer {
      
     public static void main(String[] args) throws IOException {
  
-        int bytesRead;
+        
         int current = 0;
-        byte[] request = new byte[1024];
+        String request;
      
         ServerSocket serverSocket = null;
         serverSocket = new ServerSocket(6969);
@@ -18,11 +18,9 @@ public class ExternalServer {
             clientSocket = serverSocket.accept();
             System.out.println("client accepted");
              
-            InputStream in = clientSocket.getInputStream();
-            bytesRead = in.read(request);
-            String requestString = new String(request);
-            requestString = requestString.trim();
-            System.out.println(requestString);
+            DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+            request = in.readUTF();
+            System.out.println(request);
              
             // Writing the file to disk
             // Instantiating a new output stream object
@@ -30,7 +28,7 @@ public class ExternalServer {
 
             //TODO: read input from client, and use that for filename.
 
-            File myFile = new File(new String(requestString));
+            File myFile = new File(request);
             byte[] mybytearray = new byte[(int) myFile.length()];
             
             FileInputStream fis = new FileInputStream(myFile);

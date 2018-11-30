@@ -16,9 +16,9 @@ public class Client {
         int current = 0;
          
         InputStream in = sock.getInputStream();
-        OutputStream out = sock.getOutputStream();
+        DataOutputStream out = new DataOutputStream(sock.getOutputStream());
         String request = "memes.docx";
-        out.write(request.getBytes());
+        out.writeUTF(request);
 
         DataInputStream din = new DataInputStream(in);
         String fileName = din.readUTF();
@@ -28,15 +28,17 @@ public class Client {
             flag = true;
             String newHost = din.readUTF();
             int newPort = din.readInt();
+            System.out.println(newHost);
+            System.out.println(newPort);
             in.close();
             out.close();
             din.close();
             sock.close();
             sock = new Socket(newHost, newPort);
             in = sock.getInputStream();
-            out = sock.getOutputStream();
+            out = new DataOutputStream(sock.getOutputStream());
             din = new DataInputStream(in);
-            out.write(request.getBytes());
+            out.writeUTF(request);
             fileName = din.readUTF();
 
         }
@@ -57,15 +59,21 @@ public class Client {
 
                     Runtime.getRuntime().addShutdownHook(new Thread() {
                         public void run() {
-                            Socket shutdownSocket = new Socket(address, port);
-                            InputStream sdin = shutdownSocket.getInputStream();
-                            OutputStream sdout = shutdownSocket.getOutputStream();
-                            sdout.write("shutdown".getBytes());
-                            sdout.flush();
-                            sdout.write("memes.docx".getBytes());
-                            sdout.flush();
-                            sdout.close();
-                            shutdownSocket.close();         
+                            System.out.println("shutting down");
+                            try{
+                                Socket shutdownSocket = new Socket(address, port);
+                                InputStream sdin = shutdownSocket.getInputStream();
+                                OutputStream sdout = shutdownSocket.getOutputStream();
+                                sdout.write("shutdown".getBytes());
+                                sdout.flush();
+                                sdout.write("memes.docx".getBytes());
+                                sdout.flush();
+                                sdout.close();
+                                shutdownSocket.close();  
+                            }catch(Exception e){
+                                System.out.println("shutdown failed");
+                            } 
+
                         }       
                     });
                     int bytesRead;
