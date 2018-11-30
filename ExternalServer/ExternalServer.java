@@ -52,6 +52,7 @@ public class ExternalServer {
             dos.flush();
              
             clientSocket.close();
+            System.out.println("****************");
         }
     }
 }

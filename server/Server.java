@@ -48,6 +48,7 @@ public class Server{
         byte[] reply = new byte[4096];
 
         while(true){
+            System.out.println("***********");
             Socket client = null;
             Socket server = null;
             
@@ -109,10 +110,9 @@ public class Server{
                         streamToServer.writeUTF(req);
                         streamToServer.flush();
                     }else{
-                        System.out.println("else");
                         cached = (CacheableObject)cache.getFromCache(req);
                         peerAddress = (String)cached.object;
-                        System.out.println(peerAddress);
+                        System.out.println("Peer Address: " + peerAddress);
                         peerPort = 6967;
                         
                     }
@@ -123,7 +123,6 @@ public class Server{
                 
                 if(!flag){
                     try{
-                        System.out.println("IN IF");
                         // DataInputStream dsfs = new DataInputStream(streamFromServer);
                          DataOutputStream dstc = new DataOutputStream(streamToClient);
                          DataInputStream dsfs = streamFromServer;
@@ -142,12 +141,10 @@ public class Server{
                         dsfs.close();
                         dstc.close();
                     }catch(IOException e){
-                        System.out.println("failed");
                     }
                     streamToClient.close();
                     streamToServer.close();
                 }else if(flag){
-                    System.out.println("IN ELSE");
                     streamToServer.close();
                     try{
                         DataOutputStream dstc = new DataOutputStream(streamToClient);
@@ -161,7 +158,6 @@ public class Server{
                     }
 
                 }
-                System.out.println("AFTER ELSE");
 
             }catch(IOException e){
                 System.err.println(e);

@@ -106,9 +106,11 @@ public class Client {
                 
                     ServerSocket serverSocket = null;
                     try{
+                        System.out.println("Hosting");
                         serverSocket = new ServerSocket(6967);
                         
                         while(true) {
+                            System.out.println("************");
                             Socket clientSocket = null;
                             clientSocket = serverSocket.accept();
                             System.out.println("client accepted");
