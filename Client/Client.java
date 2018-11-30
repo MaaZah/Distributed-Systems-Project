@@ -1,14 +1,39 @@
 import java.net.*;
+import java.util.Scanner;
 import java.io.*;
  
 public class Client {
      
     private static boolean flag = false;
     private static String address;
+    private static String request;
     private static int port;
     public static void main(String[] args) throws IOException {
  
-        address = "localhost";
+        if(args.length < 2){
+            System.out.println("Proper usage: java Client serverIP fileName");
+            System.exit(1);
+        }
+
+        address = args[0];
+        request = args[1];
+        // Scanner sc = new Scanner(System.in);
+        // System.out.println("Please choose a file: ");
+        // System.out.println("1: memes.docx");
+        // System.out.println("2: Veedeo(final)v4.2-last-finished-v5-done.mp4");
+        // int input = sc.nextInt();
+        // sc.close();
+        // if(input == 1){
+        //     System.out.println("1");
+        //     request = "memes.docx";
+        // }else if(input ==2){
+        //     System.out.println("2");
+        //     request = "Veedeo(final)v4.2-last-finished-v5-done.mp4";
+        // }else{
+        //     System.out.println("invalid input, exiting");
+        //     System.exit(1);
+        // }
+
         port = 6968;
         Socket sock = new Socket(address, port);
  
@@ -17,7 +42,6 @@ public class Client {
          
         InputStream in = sock.getInputStream();
         DataOutputStream out = new DataOutputStream(sock.getOutputStream());
-        String request = "memes.docx";
         out.writeUTF(request);
 
         DataInputStream din = new DataInputStream(in);

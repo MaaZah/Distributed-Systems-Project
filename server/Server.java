@@ -20,10 +20,16 @@ public class Server{
     public static DataOutputStream streamToServer;
     public static void main(String[] args) throws IOException{
 
+        if(args.length < 2){
+            System.out.println("Proper usage: java Server serverIP serverPort");
+            System.exit(1);
+        }
+
+        String host = args[0];
+        int remotePort = Integer.parseInt(args[1]);
+
         try{
             cache = new CacheManager();
-            String host = "localhost";
-            int remotePort = 6969;
             int localPort = 6968;
 
             System.out.println("Starting proxy for " + host + ":" + remotePort + " on port " + localPort);

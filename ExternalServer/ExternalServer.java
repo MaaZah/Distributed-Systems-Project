@@ -5,12 +5,18 @@ public class ExternalServer {
      
     public static void main(String[] args) throws IOException {
  
+        if(args.length < 1){
+            System.out.println("Proper usage: java ExternalServer portNumber");
+            System.exit(1);
+        }
+
+        int port = Integer.parseInt(args[0]);
         
         int current = 0;
         String request;
      
         ServerSocket serverSocket = null;
-        serverSocket = new ServerSocket(6969);
+        serverSocket = new ServerSocket(port);
         
            
         while(true) {
