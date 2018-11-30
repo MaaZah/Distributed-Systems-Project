@@ -71,7 +71,8 @@ public class Server{
                     if(req.equals("shutdown")){
                         System.out.println("shutting down client");
                         String sdreq = streamFromClient.readUTF();
-                        cache.removeFromCache(new CacheableObject(address, sdreq, 0));
+                        cache.removeByID(sdreq);
+                        //cache.removeFromCache(new CacheableObject(address, sdreq, 0));
                         streamFromClient.close();
                         continue;
                     }
