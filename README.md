@@ -1,5 +1,4 @@
 # Peer to Peer Caching Service (Group 11)
-=======
 
 ## User guide:
 * Each component has it's own directory. 
@@ -21,7 +20,7 @@
 * Client
     * ```java Client cacheIP fileName```
         * cacheIP is the IP address of the machine running Server ("localhost" is sufficient if running locally)
-        * fileName must be the name of a file hosted in ExternalServer's directory
+        * fileName must be the name of a file hosted in ExternalServer's directory, ```test.docx``` is provided in ExternalServer, feel free to test with other files and file types
 
 ## Additional Notes:
 ### Limitations:
