@@ -1,4 +1,5 @@
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
  
@@ -127,13 +128,15 @@ public class Client {
                     } 
                 }       
             });
-
+            int numClients = 0;
+            ArrayList<Thread> threads = new ArrayList<Thread>();
             while(true) {
                 try{
                     //wait for a client to connect
                     Socket clientSocket = null;
                     
                     clientSocket = serverSocket.accept();
+                    numClients++;
                     System.out.println("client accepted");
 
                     //open i/o streams
@@ -144,7 +147,19 @@ public class Client {
                     //Create new hosting thread and start it
                     Thread t = new fileHostingThread(clientSocket, cdos, cdin);
                     t.start();
+                    threads.add(t);
                     System.out.println("************");
+                    if(numClients ==5){
+                        try{
+                            for(int i=0;i<threads.size();i++){
+                                threads.get(i).join();
+                            }
+                            System.exit(1);
+                        }catch(Exception e){
+                            System.err.println(e);
+                            e.printStackTrace();
+                        }
+                    }
                 }catch(SocketTimeoutException e){
                     System.out.println("Socket timed out after 5 minutes");
                     System.exit(1);
