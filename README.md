@@ -1,25 +1,25 @@
-# Peer to Peer Chaching Service (Group 11)
+# Peer to Peer Caching Service (Group 11)
 =======
 
 ## User guide:
 * Each component has it's own directory. 
 * In order to use the solution on one machine, open a new terminal in each of the directories
-* The java files have been pre-compiled for ease of use, however if you wish to recompile, simply use the command "javac *.java" in each terminal
+* The java files have been pre-compiled for ease of use, however if you wish to recompile, simply use the command ```javac *.java``` in each terminal
 * ExternalServer's directory contains a sample file for testing, however it will work with any file type
-* If you wish to test with more Clients than Client directories we have provided, simply create a new folder, copy into it Client.java, open a terminal and compile with "javac *.java"
+* If you wish to test with more Clients than Client directories we have provided, simply create a new folder, copy into it Client.java, open a terminal and compile with ```javac *.java```
 
 ## Execution:
 * The components should be executed in this order: ExternalServer, Server, Client(s)
 * ExternalServer
-    * java ExternalServer portNumber
+    * ```java ExternalServer portNumber```
         * portNumber is the port on which you wish to run ExternalServer
 * Server
     * note: Server will run on port 6968 by default (Client source code is consistent with this)
-    * java Server serverIP portNumber
+    * ```java Server serverIP portNumber```
         * serverIP is the IP address of the machine running ExternalServer ("localhost" is sufficient if running locally)
         * portNumber is the same port you chose for ExternalServer
 * Client
-    * java Client cacheIP fileName
+    * ```java Client cacheIP fileName```
         * cacheIP is the IP address of the machine running Server ("localhost" is sufficient if running locally)
         * fileName must be the name of a file hosted in ExternalServer's directory
 
@@ -36,7 +36,7 @@
 
 ### Resources:
 
-* For the sake of full transparency, the following links were used as guides to get started. However it should clear that they were just that: a starting point.
+* For the sake of full transparency, the following links were used as guides to get started. However it should be clear that they were just that: a starting point.
 
 * https://www.javaworld.com/article/2075440/core-java/develop-a-generic-caching-service-to-improve-performance.html
 
