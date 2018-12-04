@@ -1,3 +1,5 @@
+//CacheManager. This stores the HashMap and handles all HashMap related operations
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,50 +11,33 @@ public class CacheManager{
 
     }
 
-
+    //add a new object to hashMap
     public static void addToCache(Cacheable object){
 
         hashMap.put(object.getIdentifier(), object);
 
     }
 
-    public static void removeFromCache(Object value){
-        Object removalKey = null;
-
-        for (HashMap.Entry<Object, Object> entry : hashMap.entrySet()) {
-            if (value.equals(entry.getValue())) {
-                removalKey = entry.getKey();
-                break;
-            }
-        }
-
-        if (removalKey != null) {
-            hashMap.remove(removalKey);
-        }
-    }
-
+    //remove an object from hashMap
     public static void removeByID(Object key){
         hashMap.remove(key);
-        // Cacheable object = (Cacheable)hashMap.get(identifier);
-
-        // if(object != null){
-        //     hashMap.remove(identifier);
-        // }
-        
+        System.out.println(key.toString() + " has been removed from cache");        
     }
 
+    //retreive an object from hashMap
     public static Cacheable getFromCache(Object identifier){
 
         Cacheable object = (Cacheable)hashMap.get(identifier);
 
         if(object != null){
+            //check if object is expired before returning
             if(object.isExpired()){
-                hashMap.remove(identifier);
+                //remove from map if expired
+                removeByID(identifier);
                 return null;
             }
             return object;
         }
-
         return null;
     }
 }

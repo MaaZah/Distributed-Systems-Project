@@ -1,12 +1,14 @@
+//Simple key/object (request/address) pair that will be stored in the HashMap
+
 import java.util.Date;
 
 public class CacheableObject implements Cacheable
 {
-
     private Date expirationDate = null;
     private Object identifier = null;
-    public Object object = null;
+    private Object object = null;
 
+    //public constructor, sets id, object, and expirationDate
     public CacheableObject(Object object, Object id, int minutes){
         this.object = object;
         this.identifier = id;
@@ -20,6 +22,7 @@ public class CacheableObject implements Cacheable
         }
     }
 
+    //public method to check if object has expired
     public boolean isExpired(){
         if(expirationDate != null){
             if(expirationDate.before(new Date())){
@@ -27,14 +30,20 @@ public class CacheableObject implements Cacheable
                 return true;
             }else{
                 System.out.println(identifier + " is not Expired");
-                return true;
+                return false;
             }            
         }
         return false;
     }
 
+    //return identifier
     public Object getIdentifier(){
         return identifier;
+    }
+
+    //return object
+    public Object getObject(){
+        return object;
     }
 
 

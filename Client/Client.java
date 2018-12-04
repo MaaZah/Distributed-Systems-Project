@@ -10,64 +10,74 @@ public class Client {
     private static int port;
     public static void main(String[] args) throws IOException {
  
+        //verify number of arguments
         if(args.length < 2){
             System.out.println("Proper usage: java Client serverIP fileName");
             System.exit(1);
         }
 
+        //set address & request strings
         address = args[0];
         request = args[1];
-        // Scanner sc = new Scanner(System.in);
-        // System.out.println("Please choose a file: ");
-        // System.out.println("1: memes.docx");
-        // System.out.println("2: Veedeo(final)v4.2-last-finished-v5-done.mp4");
-        // int input = sc.nextInt();
-        // sc.close();
-        // if(input == 1){
-        //     System.out.println("1");
-        //     request = "memes.docx";
-        // }else if(input ==2){
-        //     System.out.println("2");
-        //     request = "Veedeo(final)v4.2-last-finished-v5-done.mp4";
-        // }else{
-        //     System.out.println("invalid input, exiting");
-        //     System.exit(1);
-        // }
 
+        //cache server runs on port 6968
         port = 6968;
+
+        //open socket to cache server
         Socket sock = new Socket(address, port);
  
-        int bytesRead;
-        int current = 0;
-         
+        //open i/o streams
         InputStream in = sock.getInputStream();
         DataOutputStream out = new DataOutputStream(sock.getOutputStream());
+        DataInputStream din = new DataInputStream(in);
+
+        //write request to cache server
         out.writeUTF(request);
 
-        DataInputStream din = new DataInputStream(in);
+        //read filename from cache server
         String fileName = din.readUTF();
         System.out.println(fileName);
         System.out.println("***********");
+
+        //check fileName against the "client hosted on local network" key
         if(fileName.equals("e35b4c8d-5cfd-4703-b733-554134897799")){
             flag = true;
+
+            //read the IP:port of the client hosting the file
             String newHost = din.readUTF();
             int newPort = din.readInt();
-            System.out.println(newHost);
-            System.out.println(newPort);
+
+            //close cache server socket
             in.close();
             out.close();
             din.close();
             sock.close();
+
+            //open new socket to hosting-client
             sock = new Socket(newHost, newPort);
+            System.out.println("Connecting to: " + newHost + ":" + newPort);
+
+            //open i/o streams
             in = sock.getInputStream();
             out = new DataOutputStream(sock.getOutputStream());
             din = new DataInputStream(in);
+
+            //write request to hosting-client
             out.writeUTF(request);
+
+            //read fileName from hosting-client
             fileName = din.readUTF();
 
         }
+
+        //open a FileOutPutStream where the file will be saved
         OutputStream output = new FileOutputStream(fileName);
+
+        //read filesize from hosting-client
         long size = din.readLong();
+
+        //read file from hosting-client and write to fileoutputstream
+        int bytesRead;
         byte[] buffer = new byte[1024];
         while (size > 0 && (bytesRead = din.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1)
         {
@@ -75,83 +85,113 @@ public class Client {
             size -= bytesRead;
         }
          
+        //close socket
         output.close();
+        sock.close();
 
         if(!flag){
-            Thread t = new Thread(){
-                public void run(){
+            //if the file was retreived from the external file server and not another client, start hosting the file
+            ServerSocket serverSocket = null;
+            System.out.println("Hosting");
+            serverSocket = new ServerSocket(6967);
 
-                    Runtime.getRuntime().addShutdownHook(new Thread() {
-                        public void run() {
-                            System.out.println("shutting down");
-                            try{
-                                Socket shutdownSocket = new Socket(address, port);
-                                InputStream sdin = shutdownSocket.getInputStream();
-                                DataOutputStream sdout = new DataOutputStream(shutdownSocket.getOutputStream());
-                                sdout.writeUTF("shutdown");
-                                sdout.flush();
-                                sdout.writeUTF("memes.docx");
-                                sdout.flush();
-                                sdout.close();
-                                shutdownSocket.close();  
-                            }catch(Exception e){
-                                System.out.println("shutdown failed");
-                            } 
+            //set socket timeout to 5min, if no client connects in 5min it will throw exception and shut down
+            serverSocket.setSoTimeout(5*60*1000);
 
-                        }       
-                    });
-                    int bytesRead;
-                    int current = 0;
-                    byte[] request = new byte[1024];
-                
-                    ServerSocket serverSocket = null;
+            //add shutdown hook to notify cache server that this client is no longer hosting the file
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    System.out.println("shutting down");
                     try{
-                        System.out.println("Hosting");
-                        serverSocket = new ServerSocket(6967);
+                        //Open socket to cache server
+                        Socket shutdownSocket = new Socket(address, port);
                         
-                        while(true) {
-                            System.out.println("************");
-                            Socket clientSocket = null;
-                            clientSocket = serverSocket.accept();
-                            System.out.println("client accepted");
-                            InputStream in = clientSocket.getInputStream();
-                            bytesRead = in.read(request);
-                            String requestString = new String(request);
-                            requestString = requestString.trim();
-                            System.out.println(requestString);
-                            
-                            // Writing the file to disk
-                            // Instantiating a new output stream object
-                            
-                
-                            //TODO: read input from client, and use that for filename.
-                
-                            File myFile = new File(requestString);
-                            byte[] mybytearray = new byte[(int) myFile.length()];
-                            
-                            FileInputStream fis = new FileInputStream(myFile);
-                            BufferedInputStream bis = new BufferedInputStream(fis);
-                            DataInputStream dis = new DataInputStream(bis);
-                            dis.readFully(mybytearray, 0, mybytearray.length);
-                
-                            OutputStream os = clientSocket.getOutputStream();
-                
-                            DataOutputStream dos = new DataOutputStream(os);
-                            dos.writeUTF(myFile.getName());
-                            dos.writeLong(mybytearray.length);
-                            dos.write(mybytearray, 0, mybytearray.length);
-                        
-                            dos.flush();
-                            
-                            clientSocket.close();
-                        }
-                    }catch(Exception e){
+                        //create i/o streams
+                        InputStream sdin = shutdownSocket.getInputStream();
+                        DataOutputStream sdout = new DataOutputStream(shutdownSocket.getOutputStream());
 
-                        System.out.println("rip the dream");
-                    }
+                        //write shutdown key to cache server
+                        sdout.writeUTF("2cf94351-10f1-4b05-8de9-b47ec950eb76");
+                        sdout.flush();
+
+                        //write request to cache so it knows what to remove
+                        sdout.writeUTF(request);
+
+                        //close socket
+                        sdout.flush();
+                        sdout.close();
+                        shutdownSocket.close();  
+                    }catch(Exception e){
+                        System.err.println(e);
+                        System.out.println("shutdown failed");
+                    } 
+                }       
+            });
+
+            while(true) {
+                try{
+                    //wait for a client to connect
+                    Socket clientSocket = null;
+                    
+                    clientSocket = serverSocket.accept();
+                    System.out.println("client accepted");
+
+                    //open i/o streams
+                    OutputStream cos = clientSocket.getOutputStream();
+                    DataOutputStream cdos = new DataOutputStream(cos);
+                    DataInputStream cdin = new DataInputStream(clientSocket.getInputStream());
+
+                    //Create new hosting thread and start it
+                    Thread t = new fileHostingThread(clientSocket, cdos, cdin);
+                    t.start();
+                    System.out.println("************");
+                }catch(SocketTimeoutException e){
+                    System.out.println("Socket timed out after 5 minutes");
+                    System.exit(1);
                 }
-            };
-            t.start();
+            }
+        }
+    }
+}
+
+class fileHostingThread extends Thread{
+    private Socket clientSocket;
+    private DataOutputStream dos;
+    private DataInputStream in;
+
+    public fileHostingThread(Socket clientSocket, DataOutputStream dos, DataInputStream in){
+        this.clientSocket = clientSocket;
+        this.dos = dos;
+        this.in = in;
+
+    }
+
+    public void run(){
+        try{
+            //read requested filename from client
+            String requestString = in.readUTF();
+            System.out.println("request recieved for: " + requestString);
+
+            //open requested File and read into bytearray
+            File myFile = new File(requestString);
+            byte[] mybytearray = new byte[(int) myFile.length()];
+            FileInputStream fis = new FileInputStream(myFile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            DataInputStream dis = new DataInputStream(bis);
+            dis.readFully(mybytearray, 0, mybytearray.length);
+            
+            //write file name, file size, then file to client
+            dos.writeUTF(myFile.getName());
+            dos.writeLong(mybytearray.length);
+            dos.write(mybytearray, 0, mybytearray.length);
+            dos.flush();
+            
+            //close socket/fileStream
+            fis.close();
+            clientSocket.close();
+            
+        }catch(Exception e){
+            System.err.println(e);
         }
     }
 }
