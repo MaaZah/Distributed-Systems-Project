@@ -45,10 +45,4 @@ public class CacheableObject implements Cacheable
     public Object getObject(){
         return object;
     }
-
-
-
-
-
-
 }
